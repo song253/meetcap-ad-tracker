@@ -1,0 +1,32 @@
+{
+  "verified_on": "2026-08-18",
+  "source": "Meta Ad Library public search, country=KR, active_status=active",
+  "brands": [
+    {"name": "이블렛", "search_query": "이블렛", "page_handle_or_id": "evelletbyjstyle", "note": "확인된 목록 중 활성 광고 최다"},
+    {"name": "트릴리온", "search_query": "트릴리온", "page_handle_or_id": "100063900971993", "note": "동현 관찰(광고 매우 많음)과 일치"},
+    {"name": "러닝라이프", "search_query": "러닝라이프", "page_handle_or_id": "runninglifekorea", "note": ""},
+    {"name": "코시하루", "search_query": "코시하루", "page_handle_or_id": "100066578876994", "note": ""},
+    {"name": "디미트리블랙", "search_query": "디미트리블랙", "page_handle_or_id": "61587003925618", "note": "동현이 링크로 준 광고(사진 멋있다는 것)도 이 브랜드"},
+    {"name": "에트오소메", "search_query": "에트오소메", "page_handle_or_id": "100070196956724", "note": "무신사 콜라보 다수, 영상+캐러셀 혼합"},
+    {"name": "무센트", "search_query": "무센트", "page_handle_or_id": "61577435009811", "note": "동현 관찰(잘하고 많이 함)과 일치 - 벤치마킹 1순위"},
+    {"name": "coiris", "search_query": "coiris", "page_handle_or_id": "61580369018073", "note": ""},
+    {"name": "yemomile", "search_query": "yemomile", "page_handle_or_id": "yemomile.official", "note": ""},
+    {"name": "avandress", "search_query": "avandress", "page_handle_or_id": "AVANDRESS", "note": ""},
+    {"name": "니디즘", "search_query": "니디즘", "page_handle_or_id": "Needism", "note": ""},
+    {"name": "SSROOM", "search_query": "SSROOM", "page_handle_or_id": "61550814110591", "note": ""},
+    {"name": "SUARE studio", "search_query": "SUARE studio", "page_handle_or_id": "suarestudio.official", "note": ""},
+    {"name": "belier", "search_query": "belier", "page_handle_or_id": "belierkorea", "note": "동현 관찰(최근 광고 도는 중)과 일치, 최신 소재 2026-08-15 시작"},
+    {"name": "kikozy", "search_query": "kikozy", "page_handle_or_id": "61578380609118", "note": ""},
+    {"name": "learve(르아브)", "search_query": "learve", "page_handle_or_id": "100064116431754", "note": "검색어는 영문 learve로 해야 나옴"},
+    {"name": "nocelcozy", "search_query": "nocelcozy", "page_handle_or_id": "nocelcozy", "note": "동현 관찰(너무 쇼핑몰 느낌)과 별개로 활동은 꾸준"},
+    {"name": "Moon:z", "search_query": "moonz", "page_handle_or_id": "100086221931047", "note": "검색어는 moonz(콜론 제외)로 해야 나옴"},
+    {"name": "acroway", "search_query": "acroway", "page_handle_or_id": "100069302602024", "note": ""},
+    {"name": "샵클리퍼", "search_query": "샵클리퍼", "page_handle_or_id": "61573522783011", "note": ""},
+    {"name": "Misekiseoulmen", "search_query": "Misekiseoulmen", "page_handle_or_id": "61580504193435", "note": ""},
+    {"name": "탄산마그네슘", "search_query": "탄산마그네슘", "page_handle_or_id": "61569996238627", "note": ""},
+    {"name": "키뮤어", "search_query": "키뮤어", "page_handle_or_id": "kiimuir.us", "note": ""},
+    {"name": "slozk.ee", "search_query": "slozk.ee", "page_handle_or_id": "61565093529516", "note": "IG전용 계정과 FB페이지 2개로 나뉘어 잡힘"},
+    {"name": "dryrose", "search_query": "dryrose", "page_handle_or_id": null, "note": "동현 관찰대로 메타광고 미집행 확인됨 - 계속 0으로 나오는지만 체크용"},
+    {"name": "crassiang", "search_query": "crassiang", "page_handle_or_id": "crassiangkr", "note": "브라/이너웨어 브랜드 맞음(동현 확인) - 의도된 트래킹 대상"}
+  ]
+}
