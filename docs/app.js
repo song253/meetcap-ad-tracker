@@ -3,6 +3,21 @@ const SAVE_KEY = "meetcap_saved_ads_v1";
 let DATA = null;
 const filters = { brands: new Set(), mediaType: "all", tier: "all" };
 
+const ICON_PATHS = {
+  heart: '<path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.29 1.51 4.04 3 5.5l7 7Z"/>',
+  image: '<rect width="18" height="18" x="3" y="3" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>',
+  video: '<path d="m16 13 5.223 3.482a.5.5 0 0 0 .777-.416V7.87a.5.5 0 0 0-.752-.432L16 10.5"/><rect x="2" y="6" width="14" height="12" rx="2"/>',
+  externalLink: '<path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>',
+  chevronUp: '<path d="m18 15-6-6-6 6"/>',
+  chevronDown: '<path d="m6 9 6 6 6-6"/>',
+  minus: '<path d="M5 12h14"/>',
+};
+
+function icon(name, size = 14) {
+  const p = ICON_PATHS[name] || "";
+  return `<svg class="icon" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
+}
+
 function daysSince(dateStr) {
   if (!dateStr) return null;
   const start = new Date(dateStr + "T00:00:00+09:00");
@@ -29,12 +44,11 @@ function toggleSave(ad, btnEl) {
   if (idx >= 0) {
     list.splice(idx, 1);
     btnEl.classList.remove("saved");
-    btnEl.textContent = "♡";
   } else {
     list.unshift(ad);
     btnEl.classList.add("saved");
-    btnEl.textContent = "♥";
   }
+  btnEl.innerHTML = icon("heart", 15);
   setSaved(list);
   if (document.getElementById("panel-saved").classList.contains("active")) {
     renderSavedTab();
@@ -61,13 +75,14 @@ function mediaMarkup(ad) {
 function mediaFallbackNode(permalink) {
   const div = document.createElement("div");
   div.className = "media-fallback";
+  div.innerHTML = icon("image", 26);
   const msg = document.createElement("div");
   msg.textContent = "미리보기를 불러올 수 없어요";
   const a = document.createElement("a");
   a.href = permalink;
   a.target = "_blank";
   a.rel = "noopener";
-  a.textContent = "메타 광고 라이브러리에서 보기";
+  a.innerHTML = `메타에서 보기 ${icon("externalLink", 12)}`;
   div.appendChild(msg);
   div.appendChild(a);
   return div;
@@ -91,37 +106,63 @@ function cardMarkup(ad) {
   const d = daysSince(ad.start_date);
   const saved = isSaved(ad.library_id);
   const tier = tierOfBrand(ad.brand);
+  const mediaIcon = ad.media_type === "video" ? icon("video", 12) : icon("image", 12);
   return `
     <div class="ad-card" data-id="${ad.library_id}">
       <div class="media-wrap">
         <span class="tier-badge tier-${tier}">${tier}</span>
-        <button class="save-btn ${saved ? "saved" : ""}" data-id="${ad.library_id}">${saved ? "♥" : "♡"}</button>
+        <button class="save-btn ${saved ? "saved" : ""}" data-id="${ad.library_id}">${icon("heart", 15)}</button>
         ${mediaMarkup(ad)}
       </div>
       <div class="info">
         <div class="brand-name">${ad.brand || ""}</div>
         <div class="meta-row">
-          <span class="media-type-tag">${ad.media_type === "video" ? "영상" : "이미지"}</span>
+          <span class="media-type-tag">${mediaIcon}${ad.media_type === "video" ? "영상" : "이미지"}</span>
           <span class="dot">·</span>
           <span>${ad.start_date ? (d === 0 ? "오늘 시작" : d + "일째") : "날짜 미상"}</span>
         </div>
         <div class="info-spacer"></div>
-        <a class="meta-link-btn" href="${ad.permalink}" target="_blank" rel="noopener">메타에서 보기 <span class="arrow">↗</span></a>
+        <a class="meta-link-btn" href="${ad.permalink}" target="_blank" rel="noopener">메타에서 보기 ${icon("externalLink", 12)}</a>
       </div>
     </div>`;
 }
 
-function renderFeed(containerId, ads) {
+const PAGE_SIZE = 24;
+const pageState = {};
+
+function renderFeed(containerId, ads, opts = {}) {
+  const paginate = opts.paginate !== false;
   const el = document.getElementById(containerId);
-  el.innerHTML = ads.map(cardMarkup).join("");
+  const moreEl = document.getElementById(containerId + "-more");
+
+  if (paginate && (opts.reset || !(containerId in pageState))) {
+    pageState[containerId] = PAGE_SIZE;
+  }
+  const visibleCount = paginate ? pageState[containerId] : ads.length;
+  const visible = ads.slice(0, visibleCount);
+
+  el.innerHTML = visible.map(cardMarkup).join("");
   el.querySelectorAll(".save-btn").forEach((btn) => {
     btn.addEventListener("click", () => {
       const id = btn.dataset.id;
-      const ad = ads.find((a) => a.library_id === id);
+      const ad = visible.find((a) => a.library_id === id);
       toggleSave(ad, btn);
     });
   });
   attachMediaFallbacks(el);
+
+  if (moreEl) {
+    const remaining = ads.length - visible.length;
+    if (paginate && remaining > 0) {
+      moreEl.innerHTML = `<button class="load-more-btn">더보기 <span class="remaining">${remaining}개 더</span></button>`;
+      moreEl.querySelector(".load-more-btn").addEventListener("click", () => {
+        pageState[containerId] += PAGE_SIZE;
+        renderFeed(containerId, ads, { paginate: true });
+      });
+    } else {
+      moreEl.innerHTML = "";
+    }
+  }
 }
 
 function applyFilters(ads) {
@@ -141,8 +182,8 @@ function renderFilteredFeeds() {
   const newAds = applyFilters(DATA.feed_new_today);
   const allAds = applyFilters(DATA.feed_all);
   document.querySelector("#panel-new .empty-msg").style.display = newAds.length ? "none" : "block";
-  renderFeed("feed-new", newAds);
-  renderFeed("feed-all", allAds);
+  renderFeed("feed-new", newAds, { reset: true });
+  renderFeed("feed-all", allAds, { reset: true });
   document.getElementById("filter-reset").style.display = isFilterActive() ? "inline-block" : "none";
 }
 
@@ -220,7 +261,7 @@ function showTierInfoModal() {
 function renderSavedTab() {
   const saved = getSaved();
   document.getElementById("saved-empty").style.display = saved.length ? "none" : "block";
-  renderFeed("feed-saved", saved);
+  renderFeed("feed-saved", saved, { reset: true });
 }
 
 function sparklineSVG(history) {
@@ -237,7 +278,7 @@ function sparklineSVG(history) {
     return `${x},${y}`;
   }).join(" ");
   return `<svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}" preserveAspectRatio="none">
-      <polyline points="${pts}" fill="none" stroke="#ff5c72" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+      <polyline points="${pts}" fill="none" stroke="#fb3a5d" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
     </svg>`;
 }
 
@@ -268,19 +309,20 @@ function openBrandModal(brand) {
 function renderRanking() {
   const el = document.getElementById("ranking-list");
   el.innerHTML = DATA.brands.map((b, i) => {
-    let deltaClass = "delta-flat", deltaText = "-";
+    let deltaClass = "delta-flat", deltaIcon = "", deltaText = "-";
     if (b.delta_total != null) {
-      if (b.delta_total > 0) { deltaClass = "delta-up"; deltaText = "+" + b.delta_total; }
-      else if (b.delta_total < 0) { deltaClass = "delta-down"; deltaText = String(b.delta_total); }
-      else { deltaText = "0"; }
+      if (b.delta_total > 0) { deltaClass = "delta-up"; deltaIcon = icon("chevronUp", 12); deltaText = String(b.delta_total); }
+      else if (b.delta_total < 0) { deltaClass = "delta-down"; deltaIcon = icon("chevronDown", 12); deltaText = String(Math.abs(b.delta_total)); }
+      else { deltaIcon = icon("minus", 12); deltaText = "0"; }
     }
+    const newBadge = b.new_ads ? `<span class="rank-new-badge">+${b.new_ads} 신규</span>` : "";
     return `
       <div class="rank-row" data-name="${b.name}">
         <div class="rank-num">${i + 1}</div>
         <span class="tier-badge tier-${b.tier}" style="position:static;">${b.tier}</span>
-        <div class="rank-name">${b.name}</div>
-        <div class="rank-score">활성 ${b.total_count}${b.new_ads ? ` · 🆕${b.new_ads}` : ""}</div>
-        <div class="rank-delta ${deltaClass}">${deltaText}</div>
+        <div class="rank-name">${b.name}${newBadge}</div>
+        <div class="rank-score">활성 ${b.total_count}</div>
+        <div class="rank-delta ${deltaClass}">${deltaIcon}${deltaText}</div>
       </div>`;
   }).join("");
   el.querySelectorAll(".rank-row").forEach((row) => {
@@ -323,7 +365,7 @@ async function init() {
   buildBrandChips();
   setupFilters();
   renderFilteredFeeds();
-  renderFeed("feed-hof", DATA.hall_of_fame);
+  renderFeed("feed-hof", DATA.hall_of_fame, { paginate: false });
   renderRanking();
 
   // 오늘 신규/전체 피드가 기본 탭이라 필터 바를 처음부터 보여준다

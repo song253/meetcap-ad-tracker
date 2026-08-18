@@ -8,16 +8,39 @@
 </head>
 <body>
   <header class="topbar">
-    <h1>🔥 MEETCAP 광고 레퍼런스</h1>
-    <div id="meta-info" class="meta-info">로딩 중...</div>
+    <div class="brand-lockup">
+      <div class="brand-mark">
+        <svg class="icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
+      </div>
+      <div class="brand-text">
+        <h1>MEETCAP</h1>
+        <div class="subtitle">광고 레퍼런스 대시보드</div>
+      </div>
+    </div>
+    <div id="meta-info" class="meta-info"><span class="live-dot"></span>로딩 중...</div>
   </header>
 
   <nav class="tabs" id="tabs">
-    <button class="tab-btn active" data-tab="new">🆕 오늘 신규</button>
-    <button class="tab-btn" data-tab="feed">📋 전체 피드</button>
-    <button class="tab-btn" data-tab="ranking">🏆 랭킹</button>
-    <button class="tab-btn" data-tab="hof">👑 명예의전당</button>
-    <button class="tab-btn" data-tab="saved">💾 저장함</button>
+    <button class="tab-btn active" data-tab="new">
+      <svg class="icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></svg>
+      오늘 신규
+    </button>
+    <button class="tab-btn" data-tab="feed">
+      <svg class="icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="7" x="3" y="3" rx="1.5"/><rect width="7" height="7" x="14" y="3" rx="1.5"/><rect width="7" height="7" x="14" y="14" rx="1.5"/><rect width="7" height="7" x="3" y="14" rx="1.5"/></svg>
+      전체 피드
+    </button>
+    <button class="tab-btn" data-tab="ranking">
+      <svg class="icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
+      랭킹
+    </button>
+    <button class="tab-btn" data-tab="hof">
+      <svg class="icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m2.5 5 3.5 3 6-6 6 6 3.5-3-2 12h-15z"/><path d="M4.5 17h15"/></svg>
+      명예의전당
+    </button>
+    <button class="tab-btn" data-tab="saved">
+      <svg class="icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+      저장함
+    </button>
   </nav>
 
   <div id="filter-bar" class="filter-bar">
@@ -34,8 +57,14 @@
         <button class="seg-btn" data-val="B">B</button>
         <button class="seg-btn" data-val="C">C</button>
       </div>
-      <button class="info-btn" id="tier-info-btn" title="등급 기준 보기">ⓘ 등급 기준</button>
-      <button class="filter-reset" id="filter-reset" style="display:none">필터 초기화 ✕</button>
+      <button class="info-btn" id="tier-info-btn" title="등급 기준 보기">
+        <svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+        등급 기준
+      </button>
+      <button class="filter-reset" id="filter-reset" style="display:none">
+        <svg class="icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+        필터 초기화
+      </button>
     </div>
     <div class="filter-row brand-chip-row" id="brand-chips"></div>
   </div>
@@ -43,18 +72,23 @@
   <main id="app">
     <section id="panel-new" class="panel active">
       <p class="hint">어제는 없었는데 오늘 새로 뜬 소재만 모았어요. 경쟁사가 지금 막 테스트를 시작한 것들이에요.</p>
-      <div class="empty-msg" style="display:none">오늘은 아직 새로 뜬 소재가 없어요. 내일 다시 확인해보세요.</div>
+      <div class="empty-msg" style="display:none">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></svg>
+        오늘은 아직 새로 뜬 소재가 없어요. 내일 다시 확인해보세요.
+      </div>
       <div class="card-feed" id="feed-new"></div>
+      <div class="load-more-wrap" id="feed-new-more"></div>
     </section>
 
     <section id="panel-feed" class="panel">
       <p class="hint">워치리스트 26개 브랜드가 지금 실제로 노출 중인 광고 전부 (최신 시작일 순).</p>
       <div class="card-feed" id="feed-all"></div>
+      <div class="load-more-wrap" id="feed-all-more"></div>
     </section>
 
     <section id="panel-ranking" class="panel">
       <p class="hint">화력 지수 = 활성 광고 수 + 신규 소재 가중치. 등급(S/A/B/C)은 워치리스트 내 상대적 순위이며 실제 지출액이 아닙니다.
-        <button class="info-btn inline" id="tier-info-btn-2">ⓘ 등급 기준 자세히</button>
+        <button class="info-btn inline" id="tier-info-btn-2">자세히 보기 →</button>
       </p>
       <div id="ranking-list" class="ranking-list"></div>
     </section>
@@ -65,14 +99,20 @@
     </section>
 
     <section id="panel-saved" class="panel">
-      <div class="empty-msg" id="saved-empty" style="display:none">저장한 광고가 없어요. 카드 오른쪽 위 ♡ 를 눌러 저장해보세요.</div>
+      <div class="empty-msg" id="saved-empty" style="display:none">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+        저장한 광고가 없어요. 카드 오른쪽 위 하트를 눌러 저장해보세요.
+      </div>
       <div class="card-feed" id="feed-saved"></div>
+      <div class="load-more-wrap" id="feed-saved-more"></div>
     </section>
   </main>
 
   <div id="brand-modal" class="modal hidden">
     <div class="modal-box">
-      <button class="modal-close" id="modal-close">✕</button>
+      <button class="modal-close" id="modal-close">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+      </button>
       <div id="modal-content"></div>
     </div>
   </div>
