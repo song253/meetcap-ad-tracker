@@ -354,8 +354,53 @@ function setupTabs() {
   });
 }
 
+function makeDragScrollable(el) {
+  if (!el) return;
+  el.classList.add("no-scrollbar");
+  let isDown = false;
+  let startX = 0;
+  let startScroll = 0;
+  let moved = false;
+
+  el.addEventListener("mousedown", (e) => {
+    isDown = true;
+    moved = false;
+    el.classList.add("dragging");
+    startX = e.clientX;
+    startScroll = el.scrollLeft;
+  });
+  window.addEventListener("mouseup", () => {
+    isDown = false;
+    el.classList.remove("dragging");
+  });
+  el.addEventListener("mouseleave", () => {
+    isDown = false;
+    el.classList.remove("dragging");
+  });
+  el.addEventListener("mousemove", (e) => {
+    if (!isDown) return;
+    e.preventDefault();
+    const dx = e.clientX - startX;
+    if (Math.abs(dx) > 4) moved = true;
+    el.scrollLeft = startScroll - dx;
+  });
+  // 드래그 직후 발생하는 클릭은 무시 (칩을 실수로 토글하지 않도록)
+  el.addEventListener(
+    "click",
+    (e) => {
+      if (moved) {
+        e.stopPropagation();
+        e.preventDefault();
+      }
+    },
+    true
+  );
+}
+
 async function init() {
   setupTabs();
+  makeDragScrollable(document.getElementById("brand-chips"));
+  makeDragScrollable(document.getElementById("tabs"));
   const res = await fetch("data.json?t=" + Date.now());
   DATA = await res.json();
 
