@@ -33,10 +33,13 @@ jobs:
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
         run: python scripts/notify_discord.py
 
-      - name: Commit snapshot
+      - name: Build dashboard data
+        run: python scripts/build_dashboard_data.py
+
+      - name: Commit snapshot + dashboard data
         run: |
           git config user.name "meetcap-ad-tracker-bot"
           git config user.email "actions@users.noreply.github.com"
-          git add data/snapshots/
+          git add data/snapshots/ docs/data.json
           git diff --cached --quiet || git commit -m "daily snapshot $(date -u +%Y-%m-%d)"
           git push

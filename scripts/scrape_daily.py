@@ -2,6 +2,10 @@
 Meta 광고 라이브러리 공개 웹 검색을 매일 순회해서 브랜드별 현재 활성 광고 스냅샷을 저장한다.
 공식 API를 쓰지 않는 이유: 한국(비-EU/영국) 상업광고는 공식 ads_archive API가 아예 데이터를 안 줌.
 공개 웹 페이지(facebook.com/ads/library)는 로그인/API 키 없이 동일 데이터를 보여주므로 이걸 그대로 자동화한다.
+
+각 광고 카드에서 video/image src까지 추출해서 대시보드에서 바로 재생/미리보기가 가능하게 한다.
+단, fbcdn 미디어 URL은 서명된 URL이라 며칠 지나면 만료될 수 있음 — 대시보드 쪽에서 로드 실패 시
+메타 원본 링크(permalink)로 폴백한다.
 """
 import json
 import random
@@ -15,13 +19,14 @@ from playwright.sync_api import sync_playwright
 ROOT = Path(__file__).resolve().parent.parent
 WATCHLIST_PATH = ROOT / "data" / "watchlist.json"
 SNAPSHOT_DIR = ROOT / "data" / "snapshots"
+EXTRACT_JS_PATH = Path(__file__).resolve().parent / "extract.js"
 
 KST = timezone(timedelta(hours=9))
 
-LIBRARY_ID_RE = re.compile(r"라이브러리 ID:\s*(\d+)")
-START_DATE_RE = re.compile(r"(\d{4})\.\s*(\d{1,2})\.\s*(\d{1,2})\.에 게재 시작함")
 RESULT_COUNT_RE = re.compile(r"결과\s*~?\s*(\d+)\s*개")
 NO_RESULT_MARK = "일치하는 광고가 없습니다"
+
+EXTRACT_JS = EXTRACT_JS_PATH.read_text(encoding="utf-8")
 
 
 def build_url(query: str) -> str:
@@ -47,16 +52,22 @@ def scrape_brand(page, query: str) -> dict:
     count_match = RESULT_COUNT_RE.search(text)
     total_count = int(count_match.group(1)) if count_match else None
 
-    ids = LIBRARY_ID_RE.findall(text)
-    dates = START_DATE_RE.findall(text)
+    raw_ads = page.evaluate(EXTRACT_JS)
     ads = []
-    for i, lib_id in enumerate(ids):
-        if i < len(dates):
-            y, m, d = dates[i]
-            start_date = f"{y}-{int(m):02d}-{int(d):02d}"
-        else:
-            start_date = None
-        ads.append({"library_id": lib_id, "start_date": start_date})
+    seen = set()
+    for a in raw_ads:
+        lib_id = a.get("id")
+        if not lib_id or lib_id in seen:
+            continue
+        seen.add(lib_id)
+        ads.append({
+            "library_id": lib_id,
+            "start_date": a.get("start_date"),
+            "media_type": a.get("media_type"),
+            "media_url": a.get("media_url"),
+            "poster_url": a.get("poster"),
+            "permalink": f"https://www.facebook.com/ads/library/?id={lib_id}",
+        })
 
     return {"total_count": total_count, "ads": ads}
 
