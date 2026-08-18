@@ -1,4 +1,8 @@
 const SAVE_KEY = "meetcap_saved_ads_v1";
+// "+ 브랜드 제안"은 이 Cloudflare Worker로만 보낸다. 진짜 디스코드 웹훅은 Worker 안의
+// 서버 secret으로만 존재하고 여기(브라우저 코드)엔 절대 없음 — 여기 있는 건 그냥
+// "메시지 하나만 중계해주는" 공개 엔드포인트라 노출돼도 문제 없음.
+const SUGGEST_ENDPOINT = "https://meetcap-brand-suggest.skyblock0902.workers.dev";
 
 let DATA = null;
 const filters = { brands: new Set(), mediaType: "all", tier: "all" };
@@ -235,6 +239,62 @@ function setupFilters() {
   });
   document.getElementById("tier-info-btn").addEventListener("click", showTierInfoModal);
   document.getElementById("tier-info-btn-2").addEventListener("click", showTierInfoModal);
+  document.getElementById("add-brand-btn").addEventListener("click", showProposeBrandModal);
+}
+
+function showProposeBrandModal() {
+  const modal = document.getElementById("brand-modal");
+  const content = document.getElementById("modal-content");
+  content.innerHTML = `
+    <h2>새 브랜드 제안</h2>
+    <div class="sub">브랜드명(또는 인스타/메타 핸들)을 입력하면 팀 디스코드로 전달돼요. 확인 후 워치리스트에 추가됩니다 — 바로 대시보드에 반영되진 않아요.</div>
+    <form class="propose-form" id="propose-form">
+      <input type="text" id="propose-input" placeholder="예: 무센트" maxlength="80" autocomplete="off" />
+      <div class="propose-status" id="propose-status"></div>
+      <div class="actions">
+        <button type="button" class="btn-secondary" id="propose-cancel">취소</button>
+        <button type="submit" class="btn-primary" id="propose-submit">제안 보내기</button>
+      </div>
+    </form>
+  `;
+  modal.classList.remove("hidden");
+
+  const input = document.getElementById("propose-input");
+  const statusEl = document.getElementById("propose-status");
+  const submitBtn = document.getElementById("propose-submit");
+  input.focus();
+
+  document.getElementById("propose-cancel").addEventListener("click", () => {
+    modal.classList.add("hidden");
+  });
+
+  document.getElementById("propose-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const name = input.value.trim();
+    if (!name) return;
+
+    submitBtn.disabled = true;
+    input.disabled = true;
+    statusEl.textContent = "보내는 중...";
+    statusEl.className = "propose-status";
+
+    try {
+      const res = await fetch(SUGGEST_ENDPOINT, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name }),
+      });
+      if (!res.ok) throw new Error("bad response");
+      statusEl.textContent = "제안 완료! 확인 후 추가할게요.";
+      statusEl.className = "propose-status ok";
+      setTimeout(() => modal.classList.add("hidden"), 1200);
+    } catch {
+      statusEl.textContent = "전송 실패 — 잠시 후 다시 시도해주세요.";
+      statusEl.className = "propose-status err";
+      submitBtn.disabled = false;
+      input.disabled = false;
+    }
+  });
 }
 
 function showTierInfoModal() {
