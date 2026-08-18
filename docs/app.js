@@ -1,6 +1,7 @@
 const SAVE_KEY = "meetcap_saved_ads_v1";
 
 let DATA = null;
+const filters = { brands: new Set(), mediaType: "all", tier: "all" };
 
 function daysSince(dateStr) {
   if (!dateStr) return null;
@@ -123,6 +124,99 @@ function renderFeed(containerId, ads) {
   attachMediaFallbacks(el);
 }
 
+function applyFilters(ads) {
+  return ads.filter((ad) => {
+    if (filters.mediaType !== "all" && ad.media_type !== filters.mediaType) return false;
+    if (filters.tier !== "all" && tierOfBrand(ad.brand) !== filters.tier) return false;
+    if (filters.brands.size > 0 && !filters.brands.has(ad.brand)) return false;
+    return true;
+  });
+}
+
+function isFilterActive() {
+  return filters.mediaType !== "all" || filters.tier !== "all" || filters.brands.size > 0;
+}
+
+function renderFilteredFeeds() {
+  const newAds = applyFilters(DATA.feed_new_today);
+  const allAds = applyFilters(DATA.feed_all);
+  document.querySelector("#panel-new .empty-msg").style.display = newAds.length ? "none" : "block";
+  renderFeed("feed-new", newAds);
+  renderFeed("feed-all", allAds);
+  document.getElementById("filter-reset").style.display = isFilterActive() ? "inline-block" : "none";
+}
+
+function buildBrandChips() {
+  const el = document.getElementById("brand-chips");
+  el.innerHTML = DATA.brands.map((b) => `
+    <button class="brand-chip" data-name="${escapeAttr(b.name)}">
+      ${b.name} <span class="count">${b.total_count}</span>
+    </button>`).join("");
+  el.querySelectorAll(".brand-chip").forEach((chip) => {
+    chip.addEventListener("click", () => {
+      const name = chip.dataset.name;
+      if (filters.brands.has(name)) {
+        filters.brands.delete(name);
+        chip.classList.remove("active");
+      } else {
+        filters.brands.add(name);
+        chip.classList.add("active");
+      }
+      renderFilteredFeeds();
+    });
+  });
+}
+
+function setupFilters() {
+  document.querySelectorAll("#seg-media .seg-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll("#seg-media .seg-btn").forEach((b) => b.classList.remove("active"));
+      btn.classList.add("active");
+      filters.mediaType = btn.dataset.val;
+      renderFilteredFeeds();
+    });
+  });
+  document.querySelectorAll("#seg-tier .seg-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll("#seg-tier .seg-btn").forEach((b) => b.classList.remove("active"));
+      btn.classList.add("active");
+      filters.tier = btn.dataset.val;
+      renderFilteredFeeds();
+    });
+  });
+  document.getElementById("filter-reset").addEventListener("click", () => {
+    filters.brands.clear();
+    filters.mediaType = "all";
+    filters.tier = "all";
+    document.querySelectorAll(".seg-btn").forEach((b) => b.classList.toggle("active", b.dataset.val === "all"));
+    document.querySelectorAll(".brand-chip").forEach((c) => c.classList.remove("active"));
+    renderFilteredFeeds();
+  });
+  document.getElementById("tier-info-btn").addEventListener("click", showTierInfoModal);
+  document.getElementById("tier-info-btn-2").addEventListener("click", showTierInfoModal);
+}
+
+function showTierInfoModal() {
+  const modal = document.getElementById("brand-modal");
+  const content = document.getElementById("modal-content");
+  content.innerHTML = `
+    <h2>등급은 어떻게 매겨지나요?</h2>
+    <div class="sub">메타는 한국 상업광고의 실제 지출액을 공개하지 않아요. 그래서 "얼마 썼다" 대신 "워치리스트 안에서 지금 얼마나 세게 밀고 있나"를 상대 등급으로 보여줍니다.</div>
+    <div class="formula-box">
+      화력 지수 = 활성 광고 수 + (오늘 신규 소재 수 × <code>3</code>)<br/>
+      → 이 지수로 워치리스트 26개 브랜드를 줄 세운 <b>상대 순위</b>가 등급입니다.
+    </div>
+    <div class="tier-legend">
+      <div class="tier-legend-row"><span class="tier-badge tier-S">S</span><div class="desc">상위 15% <span class="pct">— 지금 가장 세게 미는 브랜드</span></div></div>
+      <div class="tier-legend-row"><span class="tier-badge tier-A">A</span><div class="desc">상위 15~40% <span class="pct">— 꾸준히 활발</span></div></div>
+      <div class="tier-legend-row"><span class="tier-badge tier-B">B</span><div class="desc">상위 40~75% <span class="pct">— 평균 수준</span></div></div>
+      <div class="tier-legend-row"><span class="tier-badge tier-C">C</span><div class="desc">하위 25% <span class="pct">— 광고 활동이 적음</span></div></div>
+    </div>
+    <div class="sub">⚠️ 실제 원화 지출액이 아니라 <b>워치리스트 내부에서의 상대적 순위</b>입니다. 워치리스트 브랜드가 바뀌면 등급 기준선도 같이 움직여요.</div>
+  `;
+  modal.classList.remove("hidden");
+}
+
 function renderSavedTab() {
   const saved = getSaved();
   document.getElementById("saved-empty").style.display = saved.length ? "none" : "block";
@@ -205,6 +299,9 @@ function setupTabs() {
       btn.classList.add("active");
       document.getElementById("panel-" + btn.dataset.tab).classList.add("active");
       if (btn.dataset.tab === "saved") renderSavedTab();
+      document.getElementById("filter-bar").classList.toggle(
+        "visible", btn.dataset.tab === "new" || btn.dataset.tab === "feed"
+      );
     });
   });
   document.getElementById("modal-close").addEventListener("click", () => {
@@ -223,11 +320,14 @@ async function init() {
   document.getElementById("meta-info").textContent =
     `${DATA.generated_from_date} 기준` + (DATA.prev_date ? ` (전일 ${DATA.prev_date} 대비)` : " (첫 수집일)");
 
-  document.querySelector("#panel-new .empty-msg").style.display = DATA.feed_new_today.length ? "none" : "block";
-  renderFeed("feed-new", DATA.feed_new_today);
-  renderFeed("feed-all", DATA.feed_all);
+  buildBrandChips();
+  setupFilters();
+  renderFilteredFeeds();
   renderFeed("feed-hof", DATA.hall_of_fame);
   renderRanking();
+
+  // 오늘 신규/전체 피드가 기본 탭이라 필터 바를 처음부터 보여준다
+  document.getElementById("filter-bar").classList.add("visible");
 }
 
 init();

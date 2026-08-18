@@ -20,6 +20,26 @@
     <button class="tab-btn" data-tab="saved">💾 저장함</button>
   </nav>
 
+  <div id="filter-bar" class="filter-bar">
+    <div class="filter-row filter-row-seg">
+      <div class="seg-group" id="seg-media">
+        <button class="seg-btn active" data-val="all">전체</button>
+        <button class="seg-btn" data-val="video">영상만</button>
+        <button class="seg-btn" data-val="image">이미지만</button>
+      </div>
+      <div class="seg-group" id="seg-tier">
+        <button class="seg-btn active" data-val="all">등급 전체</button>
+        <button class="seg-btn" data-val="S">S</button>
+        <button class="seg-btn" data-val="A">A</button>
+        <button class="seg-btn" data-val="B">B</button>
+        <button class="seg-btn" data-val="C">C</button>
+      </div>
+      <button class="info-btn" id="tier-info-btn" title="등급 기준 보기">ⓘ 등급 기준</button>
+      <button class="filter-reset" id="filter-reset" style="display:none">필터 초기화 ✕</button>
+    </div>
+    <div class="filter-row brand-chip-row" id="brand-chips"></div>
+  </div>
+
   <main id="app">
     <section id="panel-new" class="panel active">
       <p class="hint">어제는 없었는데 오늘 새로 뜬 소재만 모았어요. 경쟁사가 지금 막 테스트를 시작한 것들이에요.</p>
@@ -33,7 +53,9 @@
     </section>
 
     <section id="panel-ranking" class="panel">
-      <p class="hint">화력 지수 = 활성 광고 수 + 신규 소재 가중치. 등급(S/A/B/C)은 워치리스트 내 상대적 순위이며 실제 지출액이 아닙니다.</p>
+      <p class="hint">화력 지수 = 활성 광고 수 + 신규 소재 가중치. 등급(S/A/B/C)은 워치리스트 내 상대적 순위이며 실제 지출액이 아닙니다.
+        <button class="info-btn inline" id="tier-info-btn-2">ⓘ 등급 기준 자세히</button>
+      </p>
       <div id="ranking-list" class="ranking-list"></div>
     </section>
 

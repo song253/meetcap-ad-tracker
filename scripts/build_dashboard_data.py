@@ -11,6 +11,7 @@ SNAPSHOT_DIR = ROOT / "data" / "snapshots"
 DOCS_DIR = ROOT / "docs"
 
 NEW_AD_WEIGHT = 3
+PER_BRAND_FEED_CAP = 15  # 브랜드 하나가 "전체 피드"를 다 채워버리지 않도록 브랜드당 최신 N개만
 
 
 def tier_for_rank(rank: int, total: int) -> str:
@@ -67,13 +68,18 @@ def main():
         dated = [a for a in ads if a.get("start_date")]
         oldest = min(dated, key=lambda a: a["start_date"]) if dated else None
 
-        for a in ads:
-            enriched = {**a, "brand": name}
-            all_ads.append(enriched)
+        enriched_ads = [{**a, "brand": name} for a in ads]
+
+        # 브랜드당 최신 N개만 "전체 피드"에 반영 — 활동량이 많은 브랜드가
+        # 다른 브랜드를 전부 밀어내고 피드를 독식하는 걸 막기 위함
+        by_recency = sorted(enriched_ads, key=lambda a: a.get("start_date") or "", reverse=True)
+        all_ads.extend(by_recency[:PER_BRAND_FEED_CAP])
+
+        for a in enriched_ads:
             if a["library_id"] in new_ids:
-                new_today_ads.append(enriched)
+                new_today_ads.append(a)
             if a.get("start_date"):
-                hall_of_fame_candidates.append(enriched)
+                hall_of_fame_candidates.append(a)
 
         brand_rows.append({
             "name": name,
@@ -104,7 +110,7 @@ def main():
         "generated_from_date": latest["date"],
         "prev_date": prev["date"] if prev else None,
         "brands": brand_rows,
-        "feed_all": all_ads[:300],
+        "feed_all": sorted(all_ads, key=lambda a: a.get("start_date") or "", reverse=True),
         "feed_new_today": new_today_ads,
         "hall_of_fame": hall_of_fame,
     }
