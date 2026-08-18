@@ -357,15 +357,15 @@ function setupTabs() {
 function makeDragScrollable(el) {
   if (!el) return;
   el.classList.add("no-scrollbar");
+  const DRAG_THRESHOLD = 10; // 이 픽셀을 넘게 움직여야 "드래그"로 인정 (그냥 클릭할 때의 손떨림은 무시)
   let isDown = false;
   let startX = 0;
   let startScroll = 0;
-  let moved = false;
+  let dragging = false;
 
   el.addEventListener("mousedown", (e) => {
     isDown = true;
-    moved = false;
-    el.classList.add("dragging");
+    dragging = false;
     startX = e.clientX;
     startScroll = el.scrollLeft;
   });
@@ -379,16 +379,20 @@ function makeDragScrollable(el) {
   });
   el.addEventListener("mousemove", (e) => {
     if (!isDown) return;
-    e.preventDefault();
     const dx = e.clientX - startX;
-    if (Math.abs(dx) > 4) moved = true;
+    if (!dragging) {
+      if (Math.abs(dx) < DRAG_THRESHOLD) return; // 아직 클릭인지 드래그인지 애매한 구간 - 아무것도 안 함
+      dragging = true;
+      el.classList.add("dragging");
+    }
+    e.preventDefault();
     el.scrollLeft = startScroll - dx;
   });
-  // 드래그 직후 발생하는 클릭은 무시 (칩을 실수로 토글하지 않도록)
+  // 실제로 드래그가 일어났을 때만 그 뒤에 딸려오는 클릭을 무시 (칩 오작동 방지)
   el.addEventListener(
     "click",
     (e) => {
-      if (moved) {
+      if (dragging) {
         e.stopPropagation();
         e.preventDefault();
       }
