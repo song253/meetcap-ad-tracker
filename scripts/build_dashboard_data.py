@@ -11,7 +11,6 @@ SNAPSHOT_DIR = ROOT / "data" / "snapshots"
 DOCS_DIR = ROOT / "docs"
 
 NEW_AD_WEIGHT = 3
-PER_BRAND_FEED_CAP = 15  # 브랜드 하나가 "전체 피드"를 다 채워버리지 않도록 브랜드당 최신 N개만
 
 
 def tier_for_rank(rank: int, total: int) -> str:
@@ -45,7 +44,7 @@ def main():
             })
 
     brand_rows = []
-    all_ads = []  # 전체 피드용 (브랜드 태그 포함)
+    ads_by_brand = {}  # name -> 그 브랜드가 스크래핑된 소재 전부 (최신순), 브랜드 필터 시 전부 노출용
     new_today_ads = []
     hall_of_fame_candidates = []
 
@@ -69,11 +68,7 @@ def main():
         oldest = min(dated, key=lambda a: a["start_date"]) if dated else None
 
         enriched_ads = [{**a, "brand": name} for a in ads]
-
-        # 브랜드당 최신 N개만 "전체 피드"에 반영 — 활동량이 많은 브랜드가
-        # 다른 브랜드를 전부 밀어내고 피드를 독식하는 걸 막기 위함
-        by_recency = sorted(enriched_ads, key=lambda a: a.get("start_date") or "", reverse=True)
-        all_ads.extend(by_recency[:PER_BRAND_FEED_CAP])
+        ads_by_brand[name] = sorted(enriched_ads, key=lambda a: a.get("start_date") or "", reverse=True)
 
         for a in enriched_ads:
             if a["library_id"] in new_ids:
@@ -98,8 +93,16 @@ def main():
     for i, r in enumerate(brand_rows):
         r["tier"] = tier_for_rank(i, len(brand_rows))
 
-    # 피드는 최신 소재 우선 정렬
-    all_ads.sort(key=lambda a: a.get("start_date") or "", reverse=True)
+    # 전체 피드(필터 없음)는 브랜드별로 라운드로빈 인터리빙 — 활동량 많은 브랜드가
+    # 최신순 정렬에서 전부 상위를 독식해버리는 걸 막는다. 특정 브랜드로 필터를 걸면
+    # 어차피 ads_by_brand[name] 전체(스크래핑된 전부)가 그대로 노출됨.
+    queues = [list(ads_by_brand[r["name"]]) for r in brand_rows]
+    all_ads = []
+    while any(queues):
+        for q in queues:
+            if q:
+                all_ads.append(q.pop(0))
+
     new_today_ads.sort(key=lambda a: a.get("start_date") or "", reverse=True)
 
     # 명예의 전당: 가장 오래 살아남은(=검증된 승자) 소재 TOP 10
@@ -110,7 +113,7 @@ def main():
         "generated_from_date": latest["date"],
         "prev_date": prev["date"] if prev else None,
         "brands": brand_rows,
-        "feed_all": sorted(all_ads, key=lambda a: a.get("start_date") or "", reverse=True),
+        "feed_all": all_ads,
         "feed_new_today": new_today_ads,
         "hall_of_fame": hall_of_fame,
     }

@@ -39,10 +39,23 @@ def build_url(query: str) -> str:
 
 def scrape_brand(page, query: str) -> dict:
     page.goto(build_url(query), wait_until="networkidle", timeout=45000)
-    # 결과가 lazy-load 되므로 살짝 스크롤해서 앞쪽 소재들을 더 로드한다
-    for _ in range(4):
-        page.mouse.wheel(0, 2000)
-        page.wait_for_timeout(600)
+
+    # 결과가 lazy-load 되므로 계속 스크롤해서 최대한 많은 소재를 로드한다.
+    # 활성 광고가 100개 넘는 브랜드도 있어서(트릴리온 등), 페이지 높이가
+    # 더 이상 안 늘어날 때까지(=끝까지 로드됨) 반복하되 너무 오래 걸리지 않게 상한을 둔다.
+    last_height = 0
+    stable_rounds = 0
+    for _ in range(25):
+        page.mouse.wheel(0, 2600)
+        page.wait_for_timeout(500)
+        height = page.evaluate("document.body.scrollHeight")
+        if height == last_height:
+            stable_rounds += 1
+            if stable_rounds >= 2:
+                break
+        else:
+            stable_rounds = 0
+        last_height = height
 
     text = page.inner_text("body")
 
