@@ -1,4 +1,5 @@
 name: Daily Meta Ad Library Report
+# re-sync trigger
 
 on:
   schedule:
